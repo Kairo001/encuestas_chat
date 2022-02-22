@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="col-md-6 mx-auto">
+    <div class="card text-center">
+        <div class="card-header" style="background-color: #8cc651;">
+            <h4> Vista de la encuesta {{pk_encuesta}} </h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% include "encuesta_base.html" with form=form %}
+            </form>
+            <hr>
+            <!-- Button trigger modal -->
+            <a href="{% url 'lista_encuestas' %}" class="btn btn-secondary">Volver al listado de encestas.</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+            $('.class-fecha').datepicker();
+    });
+</script>
+{% endblock %}

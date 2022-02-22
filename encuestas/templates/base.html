@@ -1,0 +1,178 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuestas</title>
+    <!-- Botostrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    {% block extra_css %}{% endblock %}
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+
+    <script src="https://kit.fontawesome.com/2f18e8f7e9.js" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"
+        integrity="sha512-QSkVNOCYLtj73J4hbmVoOV6KVZuMluZlioC+trLpewV8qMjsWqlIQvkn1KGX2StWvPMdWGBqim1xlC8krl1EKQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    {% block head_js %}
+    {% endblock %}
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Coonaltragas</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#"> Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    {% if user.is_authenticated %}
+
+                    {% if user.is_manager %}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_encuestas' %}"> Encuestas </a>
+                    </li>
+
+                    {% else %}
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_encuestas_realizar' %}"> Mis encuestas </a>
+                    </li>
+
+                    {% endif %}
+
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Perfil
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{% url 'updateuser' user.pk %}">Modificar datos</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'logout' %}">Salir</a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Entrar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'signup' %}">Registrarse</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="p-5">
+        {% block content %}
+
+
+
+        {% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+        crossorigin="anonymous"></script>
+
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+
+
+
+        const encuestaSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/notificar_encuesta/'
+        )
+
+        encuestaSocket.onmessage = e => {
+            console.log('onmessage')
+
+            const data = JSON.parse(e.data)
+            if (!('{{user.is_manager}}' === "True")) {
+                Swal.fire({
+                    title: '<strong>Encuesta nueva</strong>',
+                    icon: 'info',
+                    html: `Puedes hacerla en el siguiente 
+                            <a href="http://${window.location.host}/encuestas/realizar_encuesta/${data.message}/">link</a>`,
+                    showCloseButton: true,
+                    focusConfirm: false,
+                })
+            }
+        }
+
+        encuestaSocket.onclose = e => {
+            console.log('onclose')
+        }
+
+        const activar_encuesta = async id_encuesta => {
+            let data = {
+                'pk_encuesta': id_encuesta,
+            }
+            url = `{% url 'acitivar_encuesta' %}`
+            let resultado = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+
+            let data_response = await resultado.json()
+
+            if (data_response['actualizado'] == true) {
+                Swal.fire({
+                    title: '<strong>Encuesta activada</strong>',
+                    icon: 'info',
+                    html: 'Se ha generado un aviso a cada usuario para realizar la encuesta.',
+                    showCloseButton: true,
+                    focusConfirm: false,
+                })
+                encuestaSocket.send(JSON.stringify({
+                    'message': `${id_encuesta}`
+                }))
+                window.location.replace("http://" + window.location.host + "/encuestas/encuesta_agente/" + id_encuesta + "/");
+            }
+
+        }
+    </script>
+
+</body>
+
+</html>

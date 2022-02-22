@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card mt-4 text-center">
+            <img class="mx-auto d-block m-4" style="width: 15%" src="{% static 'logo.jpg' %}"
+                alt="Logo">
+            <div class="card-body">
+                <form action="{% url 'signup' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="row m-2">
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.numeroId class="form-control" placeholder="Número de documento*" %}
+                                {% for error in form.numeroId.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.correo class="form-control" placeholder="Correo electrónico*" %}
+                                {% for error in form.correo.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                        <div class="row m-2">
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.nombre1 class="form-control" placeholder="Primer nombre*" %}
+                                {% for error in form.nombre1.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.nombre2 class="form-control" placeholder="Segundo nombre" %}
+                                {% for error in form.nombre2.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                        <div class="row m-2">
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.apellido1 class="form-control" placeholder="Primer apellido*" %}
+                                {% for error in form.apellido1.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.apellido2 class="form-control" placeholder="Segundo apellido" %}
+                                {% for error in form.apellido2.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                        <div class="row m-2">
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.celular class="form-control" placeholder="Celular*" type="number" %}
+                                {% for error in form.celular.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-lg-6 mt-2">
+                                {% render_field form.fechaNac class="class-fecha form-control" placeholder="Fecha de nacimiento*" %}
+                                {% for error in form.fechaNac.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-6 mx-auto mt-4">
+                        <input type="password" name="password" maxlength="128" placeholder="Contraseña*"
+                            class="form-control" required="" id="id_password">
+                        <input type="password" name="password2" maxlength="128" placeholder="Confirmar contraseña*"
+                            class="form-control mt-2" required="" id="id_password2">
+                        {% for error in form.password.errors %}
+                        <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row m-3">
+
+                        <div class="col-lg-6">
+                            <a href="{% url 'login' %}" class="btn btn-outline-success btn-block mt-3 w-100">Iniciar sesión</a>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <button type="submit" class="btn btn-outline-success btn-block mt-3 w-100">
+                                Registrarse
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+            $('.class-fecha').datepicker({
+                format: 'yyyy-mm-dd',
+            });
+    });
+</script>
+{% endblock %}

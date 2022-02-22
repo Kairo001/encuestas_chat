@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="justify-content-center">
+    <div class="d-flex justify-content-center">
+        <div class="card mt-2">
+            <div class="d-flex flex-row justify-content-center p-2 adiv text-white"><span class="pb-3">Chat {{room.nombre}}</span></div>
+            <div id="chat-messages" class="m-2 overflow-auto" >
+                <div id="message-loader"><i class="fa-solid fa-loader"></i></div>
+            </div>
+                 
+            <div class="ms-2 me-2 mb-3"> 
+        
+                <form class="d-flex flex-row justify-content-between align-items-center">
+                    <div class="" style="width: 97%;">
+                        <input class="form-control" type="text" placeholder="Mensaje" id="chat-message-input">
+                    </div>
+                    <div class="">
+                        <button class="text-info" id="chat-message-submit"><i class="fa fa-paper-plane"></i></button>
+                    </div>
+                </form> 
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ room.slug|json_script:"json-roomname" }}
+{{ user.numeroId|json_script:"json-numeroId" }}
+
+<script>
+    const roomName = JSON.parse(document.getElementById('json-roomname').textContent)
+    const numeroId = JSON.parse(document.getElementById('json-numeroId').textContent)
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/'
+        + roomName
+        + '/'
+    )
+
+    chatSocket.onmessage = e => {
+        console.log('onmessage')
+
+        const data = JSON.parse(e.data)
+        let html
+        if(data.message) {
+            if (data.numeroId == numeroId) {
+                html = `<div class="d-flex flex-row mb-2">
+                                <div class="chat ms-auto p-2">
+                                    ${data.message}
+                                </div>
+                            </div>`
+            } else {
+                html = `<div class="d-flex flex-row mb-2">
+                                <div class="chat bg-white me-auto p-2">
+                                    <small style="color: darkgray;">${data.numeroId}</small> <br>
+                                    ${data.message}
+                                </div>
+                            </div>`
+            }
+            
+            chatMessages = document.querySelector('#chat-messages')
+            chatMessages.innerHTML += html
+            chatMessages.scrollTop =  chatMessages.scrollHeight
+            observer.observe(document.querySelector("#message-loader"));
+        } else {
+            alert('El manejaje fue vacío.')
+        }
+    }
+
+    chatSocket.onclose = e => {
+        console.log('onclose')
+    }
+
+
+    document.querySelector('#chat-message-submit').onclick = e => {
+        e.preventDefault()
+        const messageInputDom = document.querySelector('#chat-message-input')
+        const message = messageInputDom.value
+
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'numeroId': numeroId,
+            'room': roomName
+        }))
+
+        messageInputDom.value = ''
+
+        return false
+    }
+
+
+    function scroll_top_load(page){
+        let messages_page = document.querySelector(`#messages-page-${page}`);
+        if(messages_page){
+            messages_page.scrollIntoView();
+        }
+    } //This function helps you scroll to the correct position once a new batch of messages are loaded.
+ 
+    var page = 1
+    var observer = new IntersectionObserver(function(entries) {
+            if(entries[0].isIntersecting === true){
+                url = `
+                    {% url 'get_messages' room.slug %}?page=${page}
+                `
+                fetch(url, {
+                    method: "GET",
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                    },
+                })
+                .then((response) => {
+                    if (response.ok != true) {
+                        toastr.error(response.statusText);
+                        return null
+                    } else {
+                        return response.json()
+                    }
+                })
+                .then(function (data) {
+                    if(data.success === true){
+                        var add_messages = ``
+                        if(data.messages.length==0){
+                            toastr.info('Start a conversation')
+                        }
+                        let chatMessages = document.getElementById("chat-messages")
+                        let messageLoader = document.getElementById("message-loader")
+                        let deleteLoader  = chatMessages.removeChild(messageLoader)
+                        add_messages += `<div id="message-loader"><i class="fa-solid fa-loader"></i></div>`
+                        for(message of data.messages){
+                            if (message.user == numeroId){
+                                var add_message =  `<div class="d-flex flex-row mb-2">
+                                                        <div class="chat ms-auto p-2">
+                                                            ${message.content}
+                                                        </div>
+                                                    </div>`
+                            } else {
+                                var add_message =  `<div class="d-flex flex-row mb-2">
+                                                        <div class="chat bg-white me-auto p-2">
+                                                            <small style="color: darkgray;">${message.nombre}</small> <br>
+                                                            ${message.content}
+                                                        </div>
+                                                    </div>`
+                            }
+                            
+                            add_messages += add_message
+                        }
+                        add_messages += `<div id='messages-page-${page}'></div>`;
+                        let chat_box = document.querySelector('#chat-messages');
+                        chat_box.innerHTML = add_messages + chat_box.innerHTML;
+                        scroll_top_load(page++);
+                    }
+                })
+            }
+            observer.observe(document.querySelector("#message-loader"));
+    }, { root: null });
+
+    observer.observe(document.querySelector("#message-loader"));
+
+    
+
+</script>
+
+
+
+<style>
+
+body {
+    background: #EEEEEE;
+    font-family: 'Roboto', sans-serif;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+#chat-messages {
+    height: 150px;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.adiv {
+    background: #04CB28;
+    border-radius: 15px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    font-size: 18px;
+    height: 46px
+}
+
+.chat {
+    border: none;
+    background: #E2FFE8;
+    font-size: 13px;
+    border-radius: 20px
+}
+
+.bg-white {
+    border: 1px solid #E7E7E9;
+    font-size: 13px;
+    border-radius: 20px
+}
+
+.form-control {
+    border-radius: 12px;
+    border: 1px solid #F0F0F0;
+    font-size: 13px
+}
+
+.form-control:focus {
+    box-shadow: none
+}
+
+.form-control::placeholder {
+    font-size: 12px;
+    color: #C4C4C4
+}
+</style>
+
+{% endblock %}

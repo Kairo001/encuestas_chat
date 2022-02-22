@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="col-md-8 mx-auto">
+    <div class="card text-center">
+        <div class="card-header" style="background-color: #8cc651;">
+            <h4>Encuestas</h4>
+        </div>
+        <div class="card-body">
+            <div style="max-height: clamp(5em, 60vh, 600px); overflow: auto; min-height: 300px;">
+                <table class="table table-striped text-center">
+                    <thead class="sticky-top bg-white">
+                        <tr>
+                            <th scope="col">Id</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Descripción</th>
+                            <th scope="col">Vista previa</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for encuesta in object_list %}
+                        <tr>
+                            <td scope="row">{{encuesta.id}}</td>
+                            <td>{{ encuesta.nombre }}</td>
+                            <td>{{ encuesta.descripcion }}</td>
+                            <td>
+                                <a style="text-decoration:none;" href="{% url 'ver_encuesta' encuesta.id %}"><i
+                                        class="bi bi-eye"></i> Ver</a>
+                            </td>
+                            <td>
+
+                                <div class="dropdown">
+
+                                    <button class="btn btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Acciones
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                        {% if encuesta.estado_terminado %}
+                                        <li>
+                                            <a href="{% url 'resultados_encuesta' encuesta.id %}"
+                                               class="dropdown-item">Resultados</a>
+                                        </li>
+                                        {% else %}
+                                        <li>
+                                            <button class="dropdown-item" onclick="activar_encuesta('{{encuesta.id}}')"> Comenzar </button>
+                                        </li>
+                                        {% endif %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form action="{% url 'eliminar_encuesta' encuesta.id %}" method="post">
+                                                {% csrf_token %}
+                                                <a href="#" onclick="this.parentNode.submit()"
+                                                   class="dropdown-item">Eliminar</a>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+               
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <p class="text-center">
+                                    <em>No hay encuestas creadas aún.</em>
+                                </p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mx-auto">
+                <a type="button" class="btn btn-secondary" href="{% url 'crear_encuesta' %}">Crear una nueva
+                    encuesta</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade mt-5" id="modal_terminar_encuesta" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">¡Atención!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Ninguna persona ha respondido esta encuesta. ¿Está seguro que desea terminarla?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <a type="button" class="btn btn-outline-success" id="id_terminar_encuesta">Sí</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const terminar_encuesta = async id_encuesta => {
+
+        let consulta = await $.get('pre_terminar/', { 'pk_encuesta': id_encuesta })
+        if (consulta['terminar'] == true) {
+            await $.post('terminar_encuesta/', { 'pk_encuesta': id_encuesta, 'csrfmiddlewaretoken': '{{ csrf_token }}' })
+
+        } else {
+            $('#modal_terminar_encuesta').modal('show')
+            $('#id_terminar_encuesta').click(async function () {
+                await $.post('terminar_encuesta/', { 'pk_encuesta': id_encuesta, 'csrfmiddlewaretoken': '{{ csrf_token }}' })
+                location.reload();
+            })
+        }
+    }
+
+    const getCookie = name => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+</script>
+{% endblock %}

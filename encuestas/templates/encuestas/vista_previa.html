@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="col-md-6 mx-auto">
+    <div class="card text-center">
+        <div class="card-header" style="background-color: #8cc651;">
+            <h4>Vista previa de la encuesta </h4>
+            <ul class="navbar-nav mx-auto mb-2">
+                <div class="row">
+                    <li class="col-3 nav-item"><a class="nav-link disabled">Nueva encuesta</a></li>
+                    <li class="col-4 nav-item"><a href="{% url 'campo_encuesta' pk_encuesta %}" class="nav-link">Campos
+                            de la encuesta</a></li>
+                    <li class="col-5 nav-item"><a class="nav-link active">Vista previa de la encuesta</a></li>
+                </div>
+            </ul>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% include "encuesta_base.html" with form=form %}
+            </form>
+            <hr>
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Finalizar
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade mt-5" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Guardar formulario</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h4> ¿Estás segur@ que deseas finalizar la edición del formulario?</h4>
+                            <p>Después de finalizar no se podrá editar.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <a type="button" class="btn btn-outline-primary" href="{% url 'lista_encuestas' %}">Sí</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+            $('.class-fecha').datepicker();
+    });
+</script>
+{% endblock %}

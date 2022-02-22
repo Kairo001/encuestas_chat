@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="col-md-6 mx-auto">
+    <div class="card text-center">
+        <div class="card-header" style="background-color: #8cc651;">
+            <h4> {{encuesta.nombre}} </h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% include "encuesta_base.html" with form=form %}
+                <hr>
+                <div class="justify-content-center mt-3">
+                    <button type="submit" class="btn btn-outline-success">Enviar respuestas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{ encuesta.id|json_script:"json_id_encuesta" }}
+
+<script>
+
+    const id_encuesta = JSON.parse(document.getElementById('json_id_encuesta').textContent)
+
+    const realizarencuestaSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/realizar_encuesta/'
+        + id_encuesta
+        + '/'
+    )
+
+    realizarencuestaSocket.onmessage = e => {
+        console.log('onmessage')
+
+        let data = JSON.parse(e.data)
+
+        let element = document.getElementById(data.pregunta_id)
+        let div = element.parentElement
+        if (data.checked == true) {
+            div.style.display = "block"
+        } else {
+            div.style.display = "none"
+        }
+    }
+
+    realizarencuestaSocket.onclose = e => {
+        console.log('onclose')
+    }
+    $(document).ready(function () {
+        $('.class-fecha').datepicker({
+            format: 'yyyy-mm-dd',
+        });
+    });
+</script>
+{% endblock %}

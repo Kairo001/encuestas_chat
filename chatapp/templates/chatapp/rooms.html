@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="text-center">
+    <h3>Salas</h3>
+</div>
+<div class="row">
+    {% for room in rooms %}
+        <div class="col-4 card rounded text-center m-3">
+            <div class="card-body">
+                <h3 class="mt-2 mb-3">
+                    {{ room.nombre }}
+                </h3>
+                <a class="btn btn-outline-success w-100" href="{% url 'room' room.slug %}">
+                    Unirme
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

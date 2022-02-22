@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-4 mx-auto">
+        <div class="card mt-4 text-center">
+            <img class="mx-auto d-block m-4" style="width: 40%;" src="{% static 'logo.jpg' %}" alt="Logo">
+            <div class="card-body">
+                <div class="row col-lg-8 mx-auto">
+                    <a href="{% url 'login' %}" class="btn btn-outline-success">Iniciar sesión</a>
+                    <a href="{% url 'signup' %}" class="btn btn-outline-success mt-4">Registrarse</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

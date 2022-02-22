@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-4 mx-auto">
+        <div class="card mt-4 text-center">
+            <img class="mx-auto d-block m-4" style="width: 35%;" src="{% static 'logo.jpg' %}" alt="Logo">
+            <div class="card-body">
+                <div class="row col-lg-10 mx-auto">
+                    <div class="row mx-auto">
+                        <form method="post">
+                        {% csrf_token %}
+                        <input type="email" class="form-control" name="username" placeholder="Correo electrónico" autofocus>
+                        
+                        <input type="password" class="form-control mt-2" name="password" placeholder="Contraseña">
+                        
+                        <button type="submit" class="btn btn-outline-success btn-block mt-3 w-100">
+                            Iniciar sesión
+                        </button>
+                        </form>
+                        {% if messages %}
+                            {% for message in messages %}
+                            <p class="text-danger mt-2">{{ message }}</p>
+                            {% endfor %}
+                        {% endif %}
+
+                        <a href="{% url 'signup' %}" class="lead-sm mt-3" style="color: #8cc651;">Registrarse</a>
+                        <a href="{% url 'forgot_password' %}" class="lead-sm mt-2" style="color: #8cc651;">Olvidé mi contraseña</a>
+
+                    </div>  
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

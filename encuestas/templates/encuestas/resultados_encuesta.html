@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="col-12">
+    <h3 class="text-center">{{ encuesta.nombre }}</h3>
+    <div class="row justify-content-center" id="id_divresultados"></div>
+    <div align="center">
+        <button class="btn btn-outline-success mt-3" id="id_cambiargrafico">
+            Cambiar tipo de gráfico
+        </button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        let migrafico = []
+        let config = []
+        let data = []
+
+        let resultados = {{ resultados | safe }};
+    // Nunca usar el filtro safe en datos que no sean de confianza (como los datos enviados por un usuario). 
+    // Siempre desinfecte los datos (caracteres no seguros de escape) antes de usar el filtro safe.
+    let grafico = ['pie', 'bar']
+    let cambiar = 0
+
+    for (let i = 0; i < resultados.length; i++) {
+        let resultado = `<div class="col-md-4 mt-4">
+                            <h5 class="text-center mb-4">${resultados[i]['pregunta']}</h5>
+                            <div>
+                                <canvas id="id_canvas${i}"></canvas>
+                            </div>
+                        </div>`
+
+        $('#id_divresultados').append(resultado)
+
+        data[i] = {
+            labels: resultados[i]['labels'],
+            datasets: [{
+                label: resultados[i]['pregunta'],
+                data: resultados[i]['contador_respuestas'],
+                backgroundColor: resultados[i]['colores'],
+                options: {
+                    maintainAspectRatio: false,
+                },
+                hoverOffset: 4
+            }]
+        };
+
+        config[i] = {
+            type: 'pie',
+            data: data[i],
+        };
+
+        migrafico[i] = new Chart(
+            document.getElementById(`id_canvas${i}`),
+            config[i]
+        );
+    }
+
+    $('#id_cambiargrafico').click(function () {
+        if (cambiar == 0) {
+            cambiar = 1
+        } else if (cambiar == 1) {
+            cambiar = 0
+        }
+        for (let i = 0; i < migrafico.length; i++) {
+            config[i] = {
+                type: grafico[cambiar],
+                data: data[i],
+            };
+
+            if (migrafico[i]) {
+                migrafico[i].destroy()
+            }
+            migrafico[i] = new Chart(
+                document.getElementById(`id_canvas${i}`),
+                config[i]
+            )
+        }
+    })
+
+    });
+
+</script>
+
+{% endblock %}

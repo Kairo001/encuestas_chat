@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="col-md-8 mx-auto">
+    <div class="card">
+        <div class="card-header text-center" style="background-color: #8cc651;">
+            <h4>Campos de la encuesta</h4>
+            <ul class="navbar-nav mx-auto mb-2">
+                <div class="row">
+                    <li class="col-3 nav-item"><a href="#" class="nav-link disabled">Nueva encuesta</a></li>
+                    <li class="col-4 nav-item"><a href="#" class="nav-link active">Campos de la encuesta</a></li>
+                    <li class="col-5 nav-item"><a href="#" class="nav-link disabled">Vista previa de la encuesta</a>
+                    </li>
+                </div>
+            </ul>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == "error" %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" id="id_alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                {% if message.tags == "success" %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert" id="id_alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+            
+            {% endfor %}          
+            {% endif %}
+            <h3>Nueva pregunta</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    {% render_field form.encuesta %}
+                    {% render_field form.values_select%}
+                    <div class="col-5">
+                        <label for="{{ form.nombre_campo.id_for_label }}">Pregunta:</label>
+                        {% render_field form.nombre_campo class="form-control" %}
+                        {% for error in form.nombre_campo.errors %}
+                        <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="col-4">
+                        <label for="{{ form.tipo.id_for_label }}">Tipo:</label>
+                        {% render_field form.tipo class="form-control" %}
+                        {% for error in form.tipo.errors %}
+                        <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="col-3">
+                        <label for="{{ form.is_required.id_for_label }}">¿Es requerido?</label><br>
+                        {% render_field form.is_required class="form-check-input" %}
+                        {% for error in form.is_required.errors %}
+                        <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-outline-success mt-2">
+                    Agregar pregunta              
+                </button>
+                <br>
+                <br>
+                <span id="value_item_error" class="alert alert-danger" style="display: none;">
+                    No ingrese un item vacío.
+                </span>
+                <span id="repeticion_item_error" class="alert alert-danger" style="display: none;">
+                    No se puede agregar items repetidos
+                </span>
+                <hr id="separador_control_lista" style="display: none;">
+                <div class="row" id="control_lista" style="display: none;">
+                    <div class="col-md-6">
+                        {% render_field form.valor_item class="form-control" placeholder="Agregar item a la lista" disabled="disabled" %}
+                        <div class="row">
+                            <div class="col-5">
+                                <a id="agregar_lista" class="btn btn-outline-success mt-2 w-100" disabled="disabled">Agregar item</a>
+                            </div>
+                            <div class="col-7">
+                                <a id="eliminar_lista" class="btn btn-outline-danger mt-2 w-100" disabled="disabled">Eliminar seleccionados</a>
+                            </div>
+                        </div>             
+                    </div>
+                    <div class="col-md-6">
+                        {% render_field form.lista_valores class="form-control" style="width: 100%;" disabled="disabled" %}
+                        {% for error in form.valor_item.errors %}
+                        <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </form>
+            <hr>
+            <br>
+            <h3>Campos del formulario</h3>
+            <div style="max-height: clamp(5em, 30vh, 250px); overflow: auto;">
+                {% if encuesta %}
+                    
+                    <table class="table table-striped text-center">
+                        <thead class="sticky-top bg-white">
+                            <tr>
+                                <th scope="col">Nombre de campo</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Campo requerido</th>
+                                <th scope="col">Valores de la lista</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campo in encuesta.campos.all %}
+                            <tr>
+                                <td>
+                                    {{ campo.nombre_campo }}
+                                </td>
+                                <td>
+                                    {{ campo.get_tipo_display }}
+                                </td>
+                                <td>
+                                    {% if campo.is_required %}
+                                        Sí
+                                    {% else %}
+                                        No
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if campo.tipo == 3 %}
+                                        {{ campo.values_select }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form action="{% url 'encuesta_campo_delete' encuesta.pk campo.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <a href="#" onclick="this.parentNode.submit()" style="color: red;">
+                                            Eliminar
+                                        </a>
+                                    </form>             
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">
+                                    <p class="text-center">
+                                        <em>No se encontraron campos creados.</em>
+                                    </p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+            <div>
+                <hr>
+                <a class="btn btn-outline-success" role="button" href="{% url 'vista_previa' encuesta.pk %}">
+                    Continuar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function(){
+        if( $("#id_tipo").val() == 3 ) {
+        $("#control_lista").slideDown('fast');
+        $("#separador_control_lista").slideDown('fast');
+        $("#id_valor_item").removeAttr('disabled');
+        $("#id_lista_valores").removeAttr('disabled');
+        $("#agregar_lista").removeAttr('disabled');
+        $("#eliminar_lista").removeAttr('disabled');
+        } else {
+        $("#control_lista").slideUp('fast');
+        $("#separador_control_lista").slideUp('fast');
+        $("#id_valor_item").attr('disabled', true);
+        $("#id_lista_valores").attr('disabled', true);
+        $("#agregar_lista").attr('disabled', true);
+        $("#eliminar_lista").attr('disabled', true);
+
+        }
+    });
+    $("#agregar_lista").click(function (){
+        $('#value_item_error').hide();
+        $('#repeticion_item_error').hide();
+        var item = $('#id_valor_item').val();
+        var list = $('#id_lista_valores').val();
+        if (item == ''){
+            $('#value_item_error').show();
+        }
+        else {
+            var lista = [];
+            $('#id_lista_valores').find('option').each(function(){  lista.push($(this).val()); });
+            if (lista.indexOf(item)== -1){
+                $('#id_lista_valores').append($("<option>").val(item).html(item));
+                $('#id_valor_item').val("");
+                lista.push(item);
+                $("#id_values_select").val(JSON.stringify(lista));
+            }
+            else {
+                $('#repeticion_item_error').show();
+            }
+            
+        }
+    });
+    $("#eliminar_lista").click(function (){
+        var list_values = document.getElementById("id_lista_valores");
+        var opt_seleccionados = list_values.selectedOptions;
+        var z = 0;
+        var length = opt_seleccionados.length;
+            while (z < length) {
+            var child = opt_seleccionados[0];
+                list_values.removeChild(child);
+            z++;
+            }
+    });
+    $("#id_tipo").change(function() {
+        if( $("#id_tipo").val() == 3 ) {
+
+            $("#control_lista").slideDown('fast');
+            $("#separador_control_lista").slideDown('fast');
+            $("#id_valor_item").removeAttr('disabled');
+            $("#id_lista_valores").removeAttr('disabled');
+            $("#agregar_lista").removeAttr('disabled');
+            $("#eliminar_lista").removeAttr('disabled');
+        } else {
+            $("#control_lista").slideUp('fast');
+            $("#separador_control_lista").slideUp('fast');
+            $("#id_valor_item").attr('disabled', true);
+            $("#id_lista_valores").attr('disabled', true);
+            $("#agregar_lista").attr('disabled', true);
+            $("#eliminar_lista").attr('disabled', true);
+
+        }
+    });
+
+</script>
+{% endblock %}

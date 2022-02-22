@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-4 mx-auto">
+        <div class="card mt-4 text-center">
+            <img class="rounded mx-auto d-block m-4" style="width: 25%;" src="{% static 'logo.jpg' %}" alt="Logo">
+            <div class="card-body">
+                <div class="row col-lg-10 mx-auto">
+                    <div class="row mx-auto">
+                        <form method="post">
+                        {% csrf_token %}
+                        <input type="email" class="form-control" name="correo" placeholder="Correo electrónico" autofocus>
+
+                        <button type="submit" class="btn btn-danger btn-block mt-3 w-100">
+                            Enviar
+                        </button>
+                        </form>
+                        {% if messages %}
+                            {% for message in messages %}
+                            <p class="text-danger mt-2">{{ message }}</p>
+                            {% endfor %}
+                        {% endif %}
+                        <a href="{% url 'login' %}" class="lead-sm mt-2" style="color: crimson;">¿Ya tienes tu contraseña? Iniciar sesión.</a>
+                    </div>  
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

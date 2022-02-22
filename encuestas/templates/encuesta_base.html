@@ -1,0 +1,15 @@
+{% csrf_token %}
+
+<div class="row">
+{% for campo in form %}
+    <div class="col-md-12">
+        <div class="mt-2 m-2">
+            <div align="left">
+                {{ campo.label_tag }}
+            </div>          
+            {{campo}}        
+        </div>
+    </div>
+{% endfor %}
+</div>
+

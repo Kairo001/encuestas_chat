@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+    <div class="col-md-6 mx-auto">
+        <div class="card text-center">
+            <div class="card-header" style="background-color: #8cc651;">
+                <h4>Nueva encuesta</h4>
+                <ul class="navbar-nav mx-auto mb-2">
+                    <div class="row">
+                        <li class="col-3 nav-item"><a href="#" class="nav-link active">Nueva encuesta</a></li>
+                        <li class="col-4 nav-item"><a class="nav-link disabled">Campos de la encuesta</a></li>
+                        <li class="col-5 nav-item"><a class="nav-link disabled">Vista previa de la encuesta</a></li>
+                    </div>
+                </ul>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                {% csrf_token %}
+                <input type="text" name="nombre" maxlength="64" placeholder="Nombre de la encuesta*" class="form-control" required="" id="id_nombre" autofocus>
+                {% for error in form.nombre.errors %}
+                <p class="text-danger">{{ error }}</p>
+                {% endfor %}
+
+                {% render_field form.descripcion class="form-control mt-2" placeholder="Descripcion de la encuesta*" rows="3" cols="20" %}
+                {% for error in form.descripcion.errors %}
+                <p class="text-danger">{{ error }}</p>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-outline-success btn-block mt-2">
+                    Guardar datos y continuar
+                </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
