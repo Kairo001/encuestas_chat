@@ -2,19 +2,42 @@
 
 {% block content %}
 
-
-<div class="col-md-10">
-    <h3 class="text-center">{{ encuesta.nombre }}</h3>
-    {% for pregunta in preguntas %}
-    <div class=" m-2">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="pregunta_{{pregunta.id}}" value="{{pregunta.id}}">
-            <label class="form-check-label" for="flexCheckDefault">
-                {{pregunta.nombre_campo}}
-            </label>
+<div class="d-flex justify-content-center">
+    <div class="col-md-10">
+        <h3 class="text-center">{{ encuesta.nombre }}</h3>
+        {% for pregunta in preguntas %}
+        <div class=" m-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="pregunta_{{pregunta.id}}" value="{{pregunta.id}}">
+                <label class="form-check-label" for="flexCheckDefault">
+                    {{pregunta.nombre_campo}}
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="d-flex justify-content-center mt-4">
+            <button class="btn btn-outline-success" onclick="terminar_encuesta()">Terminar encuesta</button>
         </div>
     </div>
-    {% endfor %}
+</div>
+
+<div class="modal fade mt-5" id="modal_terminar_encuesta" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">¡Atención!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Ninguna persona ha respondido esta encuesta. ¿Estás seguro que desea terminarla?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <a type="button" class="btn btn-outline-success" id="id_terminar_encuesta">Sí</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{ encuesta.id|json_script:"json_id_encuesta" }}
@@ -60,6 +83,54 @@
             })
         }
     })
+
+    const terminar_encuesta = async () => {
+
+        url = `{% url 'pre_terminar_encuesta' %}?pk_encuesta=${id_encuesta}`
+
+        let resultado = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+
+        let data_response = await resultado.json()
+        console.log(data_response)
+
+        url = `{% url 'terminar_encuesta' %}`
+
+        if (data_response['terminar'] == true) {
+            let data = {
+                'pk_encuesta': id_encuesta
+            }
+            await fetch(url, {
+                method:'POST',
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "X-CSRFToken": '{{csrf_token}}'
+                },
+                body: JSON.stringify(data)
+            })
+            window.location.replace("http://" + window.location.host + "/encuestas/lista_encuestas/");
+        } else {
+            $('#modal_terminar_encuesta').modal('show')
+            $('#id_terminar_encuesta').click(async function () {
+                let data = {
+                    'pk_encuesta': id_encuesta
+                }
+                await fetch(url, {
+                    method:'POST',
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                        "X-CSRFToken": '{{csrf_token}}'
+                    },
+                    body: JSON.stringify(data)
+                })
+                window.location.replace("http://" + window.location.host + "/encuestas/lista_encuestas/");
+            })
+        }
+    }
 
 
 </script>

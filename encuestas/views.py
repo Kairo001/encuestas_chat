@@ -1,7 +1,6 @@
 """ Vistas para la app de encuestas """
 
 # Djang
-from urllib import response
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import reverse
@@ -210,12 +209,12 @@ class EncuestaUpdateView(View):
         return redirect('lista_encuestas_realizar')
 
     def post(self, request, *args, **kwargs):
-
-        encuesta = Encuesta.objects.get(pk=request.POST['pk_encuesta'])
+        post_data = json.loads(request.body.decode("utf-8"))
+        encuesta = Encuesta.objects.get(pk=post_data['pk_encuesta'])
         encuesta.estado_terminado = True
         encuesta.save()
 
-        return redirect('lista_encuestas')
+        return JsonResponse({'respuesta':'success'})
 
 class ActivarEncuestaView(View):
     """ Vista para actualizar el estado de la encuesta a Terminada """
@@ -303,7 +302,7 @@ class RealizarEncuestaFormView(FormView):
 
     def dispatch(self, request, *args, **kwargs):
 
-        if RespuestaCampo.objects.filter(encuesta=Encuesta.objects.get(pk=self.kwargs['pk_encuesta']), user=self.request.user).exists():
+        if Encuesta.objects.get(pk=self.kwargs['pk_encuesta']).estado_terminado == True:
             return redirect('lista_encuestas_realizar')
 
         return super().dispatch(request, *args, **kwargs)
@@ -317,26 +316,47 @@ class RealizarEncuestaFormView(FormView):
     def get_context_data(self, **kwargs):
         context = super(RealizarEncuestaFormView, self).get_context_data(**kwargs)
         encuesta = Encuesta.objects.get(pk=self.kwargs['pk_encuesta'])
+        campos = encuesta.campos.all()
+        preguntas = []
+        for campo in campos:
+            preguntas.append({
+                "pregunta_id" : campo.id,
+                "is_active" : campo.is_active
+            })
+        context['preguntas'] = preguntas
         context['encuesta'] = encuesta
         return context
 
-    def form_valid(self, form):
+class GuardarRespuestaView(View):
 
-        respuestas = form.cleaned_data
+    def post(self, request, *args, **kwargs):
+        post_data = json.loads(request.body.decode("utf-8"))
 
-        encuesta = Encuesta.objects.get(pk=self.kwargs['pk_encuesta'])
+        encuesta = Encuesta.objects.get(pk=post_data['pk_encuesta'])
+        pregunta = CampoEncuesta.objects.get(pk=post_data['pk_pregunta'])
+        respuesta_pregunta = post_data['respuesta']
 
-        preguntas = encuesta.campos.all()
+        if pregunta.is_active == True:
+            if RespuestaCampo.objects.filter(user=request.user, encuesta=encuesta, pregunta=pregunta).exists():
+                print("El usuario ya respondio a esta pregunta.")
+                respuesta = RespuestaCampo.objects.get(user=request.user, encuesta=encuesta, pregunta=pregunta)
+                print(respuesta)
+                respuesta.respuesta = respuesta_pregunta
+                respuesta.save()
+            else:
+                print("El usuario no a respondido a esta pregunta.")
+                RespuestaCampo.objects.create(
+                    user=self.request.user,
+                    encuesta=encuesta,
+                    pregunta=pregunta,
+                    respuesta=respuesta_pregunta
+                )
+            respuesta = True
+        
+        else:
+            respuesta = False
 
-        for pregunta in preguntas:
-            RespuestaCampo.objects.create(
-                user=self.request.user,
-                encuesta=encuesta,
-                pregunta=pregunta,
-                respuesta=respuestas[pregunta.nombre_campo]
-            )
-
-        return super().form_valid(form)
+        return JsonResponse({'respuesta':respuesta})
 
 class GraficaTemplateView(TemplateView):
     template_name = "encuestas/resultados_encuesta.html"

@@ -5,6 +5,9 @@ import json
 
 # Channels
 from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import sync_to_async
+
+from encuestas.models import CampoEncuesta
 
 
 class NotificationEncuestaConsumer(AsyncWebsocketConsumer):
@@ -74,6 +77,8 @@ class RealizarEncuestaConsumer(AsyncWebsocketConsumer):
         pregunta_id = data['pregunta_id']
         checked = data['cheked']
 
+        await self.update_pregunta(pregunta_id, checked)
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -91,3 +96,9 @@ class RealizarEncuestaConsumer(AsyncWebsocketConsumer):
             'pregunta_id': pregunta_id,
             'checked': checked
         }))
+
+    @sync_to_async
+    def update_pregunta(self, pregunta_id, checked):
+        pregunta = CampoEncuesta.objects.get(pk=pregunta_id)
+        pregunta.is_active = checked
+        pregunta.save()

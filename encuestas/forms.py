@@ -68,33 +68,33 @@ class EncuestaFinalForm(forms.Form):
 
         for campo in campos:
             if campo.tipo is CampoEncuesta.TIPO_TEXTO:
-                self.fields[campo.nombre_campo] = forms.CharField(
+                self.fields[campo.id] = forms.CharField(
                     label=campo.nombre_campo, widget=forms.TextInput(
-                        attrs={'class' : 'form-control', 'id': campo.id}
+                        attrs={'class' : 'form-control', 'id': campo.id, 'name' : 'pregunta_{}'.format(campo.id)}
                     ),
                     required=campo.is_required
                 )
             elif campo.tipo is CampoEncuesta.TIPO_FECHA:
-                self.fields[campo.nombre_campo] = forms.CharField(
+                self.fields[campo.id] = forms.CharField(
                     label=campo.nombre_campo, widget=forms.TextInput(
-                        attrs={'class' : 'class-fecha form-control', 'id': campo.id}
+                        attrs={'class' : 'class-fecha form-control', 'id': campo.id, 'name' : 'pregunta_{}'.format(campo.id)}
                     ),
                     required=campo.is_required
                 )
             elif campo.tipo is CampoEncuesta.TIPO_LISTA:
                 choices = [(option, option)
                            for option in json.loads(campo.values_select)]
-                self.fields[campo.nombre_campo] = forms.ChoiceField(
+                self.fields[campo.id] = forms.ChoiceField(
                     choices=choices,
                     label=campo.nombre_campo, widget=forms.Select(
-                        attrs={'class' : 'form-control', 'id': campo.id}
+                        attrs={'class' : 'form-control', 'id': campo.id, 'name' : 'pregunta_{}'.format(campo.id)}
                     ),
                     required=campo.is_required
                 )
             elif campo.tipo is CampoEncuesta.TIPO_TEXTO_AREA:
-                self.fields[campo.nombre_campo] = forms.CharField(
+                self.fields[campo.id] = forms.CharField(
                     label=campo.nombre_campo, widget=forms.Textarea(
-                        attrs={'class': 'form-control', 'rows': "3", 'id': campo.id}
+                        attrs={'class': 'form-control', 'rows': "3", 'id': campo.id, 'name' : 'pregunta_{}'.format(campo.id)}
                     ),
                     required=campo.is_required
                 )

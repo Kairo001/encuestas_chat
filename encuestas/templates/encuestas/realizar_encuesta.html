@@ -8,20 +8,53 @@
             <h4> {{encuesta.nombre}} </h4>
         </div>
         <div class="card-body">
-            <form method="post">
-                {% include "encuesta_base.html" with form=form %}
-                <hr>
-                <div class="justify-content-center mt-3">
-                    <button type="submit" class="btn btn-outline-success">Enviar respuestas</button>
+
+
+            <div class="row">
+                {% for campo in form %}
+                <div class="col-md-12">
+                    <div class="mt-2 m-2" style="display: none;">
+                        <div align="left">
+                            {{ campo.label_tag }}
+                        </div>
+                        {{campo}}
+                        <div class="justify-content-center mt-2">
+                            <button class="btn btn-outline-success"
+                                onclick="enviar_respuesta('{{campo.auto_id}}')">Enviar respuesta</button>
+                        </div>
+                    </div>
                 </div>
-            </form>
+                {% endfor %}
+            </div>
+
+            <hr>
         </div>
     </div>
 </div>
 
 {{ encuesta.id|json_script:"json_id_encuesta" }}
+{{ preguntas|json_script:"json_preguntas"}}
 
+{% endblock %}
+
+
+
+
+{% block extra_js %}
 <script>
+
+    document.addEventListener('DOMContentLoaded', e => {
+        const preguntas = JSON.parse(document.getElementById('json_preguntas').textContent)
+        for (pregunta of preguntas) {
+            let element = document.getElementById(pregunta.pregunta_id)
+            let div = element.parentElement
+            if (pregunta.is_active == true) {
+                div.style.display = "block"
+            } else {
+                div.style.display = "none"
+            }
+        }
+    })
 
     const id_encuesta = JSON.parse(document.getElementById('json_id_encuesta').textContent)
 
@@ -50,10 +83,63 @@
     realizarencuestaSocket.onclose = e => {
         console.log('onclose')
     }
+
+    const enviar_respuesta = async (pregunta_id) => {
+
+        pregunta_id = pregunta_id.split('_')[1]
+
+        respuesta = document.getElementById(pregunta_id)
+
+        let div = respuesta.parentElement
+
+        respuesta = respuesta.value
+
+        let data = {
+            'pk_encuesta': id_encuesta,
+            'pk_pregunta': parseInt(pregunta_id),
+            'respuesta': respuesta
+        }
+
+        url = `{% url 'guardar_respuesta' %}`
+
+        let resultado = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8",
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+
+        let data_response = await resultado.json()
+        console.log(data_response)
+
+        if (data_response['respuesta'] == true){
+            Swal.fire({
+                icon: 'success',
+                title: 'Tu respuesta ha sido guardada exitosamente.',
+                showConfirmButton: false,
+                timer: 1200
+            })
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Esta pregunta se encuentra inactiva.',
+                showConfirmButton: false,
+                timer: 1200
+            })
+        }
+
+        div.style.display = "none"
+
+    }
+
     $(document).ready(function () {
         $('.class-fecha').datepicker({
             format: 'yyyy-mm-dd',
         });
     });
+
 </script>
+
 {% endblock %}

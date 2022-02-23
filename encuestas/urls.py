@@ -21,4 +21,5 @@ urlpatterns = [
     path('realizar_encuesta/<pk_encuesta>/', views.RealizarEncuestaFormView.as_view(), name="realizar_encuesta"),
     path('resultados_encuesta/<pk_encuesta>/', views.GraficaTemplateView.as_view(), name='resultados_encuesta'),
     path('encuesta_agente/<pk_encuesta>/', views.EncuestaAgenteTemplateView.as_view(), name="encuesta_agente"),
+    path('guardar_respuesta/', views.GuardarRespuestaView.as_view(), name="guardar_respuesta")
 ]

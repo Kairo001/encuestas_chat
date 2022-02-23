@@ -80,40 +80,7 @@
     </div>
 </div>
 
-<div class="modal fade mt-5" id="modal_terminar_encuesta" tabindex="-1" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">¡Atención!</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Ninguna persona ha respondido esta encuesta. ¿Está seguro que desea terminarla?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                <a type="button" class="btn btn-outline-success" id="id_terminar_encuesta">Sí</a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-    const terminar_encuesta = async id_encuesta => {
-
-        let consulta = await $.get('pre_terminar/', { 'pk_encuesta': id_encuesta })
-        if (consulta['terminar'] == true) {
-            await $.post('terminar_encuesta/', { 'pk_encuesta': id_encuesta, 'csrfmiddlewaretoken': '{{ csrf_token }}' })
-
-        } else {
-            $('#modal_terminar_encuesta').modal('show')
-            $('#id_terminar_encuesta').click(async function () {
-                await $.post('terminar_encuesta/', { 'pk_encuesta': id_encuesta, 'csrfmiddlewaretoken': '{{ csrf_token }}' })
-                location.reload();
-            })
-        }
-    }
 
     const getCookie = name => {
         let cookieValue = null;

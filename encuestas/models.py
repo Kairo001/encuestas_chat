@@ -57,9 +57,10 @@ class CampoEncuesta(models.Model):
     tipo = models.PositiveIntegerField('Tipo de campo', choices=TIPO_CHOICES)
     values_select = models.TextField('Valores de la lista',blank=True, null=True)
     is_required = models.BooleanField('¿Campo requerido?')
+    is_active = models.BooleanField('Pregunta activada', default=False)
 
     def __str__(self):
-        return str("Campo {0} de la encuesta {1}".format(self.nombre_campo, self.encuesta))
+        return str("Pregunta {0} de la encuesta {1}".format(self.nombre_campo, self.encuesta))
 
 class RespuestaCampo(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="respuestas")

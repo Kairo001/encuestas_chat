@@ -15,10 +15,17 @@
                 <div class="col-4 mt-3">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title d-flex" align="left">
-                                {{ encuesta.nombre }} {% if not encuesta.ha_sido_diligenciada and not encuesta.estado_terminado %} <a class="ms-auto" href="{% url 'realizar_encuesta' encuesta.pk %}"><i 
-                                    style="color: #8cc651;" class="fa-solid fa-pen-to-square"></i></a> {% elif encuesta.estado_terminado %} <a class="ms-auto" href="{% url 'resultados_encuesta' encuesta.id %}">
-                                        <i style="color: #8cc651;" class="fa-brands fa-readme"></i></a>{% endif %}
+                            <h5 class="card-title d-flex justify-content-between align-items-center">
+                                {{ encuesta.nombre }} 
+                                {% if not encuesta.estado_terminado %} 
+                                <a href="{% url 'realizar_encuesta' encuesta.pk %}">
+                                    <i style="color: #8cc651;" class="fa-solid fa-pen-to-square"></i>
+                                </a> 
+                                {% else %} 
+                                <a href="{% url 'resultados_encuesta' encuesta.id %}">
+                                    <i style="color: #8cc651;" class="fa-brands fa-readme"></i>
+                                </a>
+                                {% endif %}
                             </h5>
                             <p align="left">{{ encuesta.descripcion }}</p>
                         </div>
