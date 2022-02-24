@@ -112,7 +112,11 @@
                 },
                 body: JSON.stringify(data)
             })
-            window.location.replace("http://" + window.location.host + "/encuestas/lista_encuestas/");
+            realizarencuestaSocket.send(JSON.stringify({
+                'pregunta_id': "Encuesta terminada",
+                'cheked': "Encuesta terminada"
+            }))
+            window.location.replace("http://" + window.location.host + "/encuestas/lista_encuestas/")
         } else {
             $('#modal_terminar_encuesta').modal('show')
             $('#id_terminar_encuesta').click(async function () {
@@ -127,7 +131,11 @@
                     },
                     body: JSON.stringify(data)
                 })
-                window.location.replace("http://" + window.location.host + "/encuestas/lista_encuestas/");
+                realizarencuestaSocket.send(JSON.stringify({
+                    'pregunta_id': "Encuesta terminada",
+                    'cheked': "Encuesta terminada"
+                }))
+                window.location.replace("http://" + window.location.host + "/encuestas/lista_encuestas/")
             })
         }
     }

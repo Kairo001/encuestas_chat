@@ -18,6 +18,7 @@
                             {{ campo.label_tag }}
                         </div>
                         {{campo}}
+                        <hr>
                         <div class="justify-content-center mt-2">
                             <button class="btn btn-outline-success"
                                 onclick="enviar_respuesta('{{campo.auto_id}}')">Enviar respuesta</button>
@@ -26,8 +27,6 @@
                 </div>
                 {% endfor %}
             </div>
-
-            <hr>
         </div>
     </div>
 </div>
@@ -70,13 +69,17 @@
         console.log('onmessage')
 
         let data = JSON.parse(e.data)
-
-        let element = document.getElementById(data.pregunta_id)
-        let div = element.parentElement
-        if (data.checked == true) {
-            div.style.display = "block"
+        console.log(data)
+        if (data.pregunta_id == "Encuesta terminada" && data.checked == "Encuesta terminada") {
+            window.location.replace("http://" + window.location.host + "/encuestas/listaencuestas/");
         } else {
-            div.style.display = "none"
+            let element = document.getElementById(data.pregunta_id)
+            let div = element.parentElement
+            if (data.checked == true) {
+                div.style.display = "block"
+            } else {
+                div.style.display = "none"
+            }
         }
     }
 

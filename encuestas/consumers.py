@@ -77,7 +77,12 @@ class RealizarEncuestaConsumer(AsyncWebsocketConsumer):
         pregunta_id = data['pregunta_id']
         checked = data['cheked']
 
-        await self.update_pregunta(pregunta_id, checked)
+        print(pregunta_id)
+        print(checked)
+
+        if pregunta_id != "Encuesta terminada" and checked != "Encuesta terminada":
+            print("Actualizando estado de la pregunta")
+            await self.update_pregunta(pregunta_id, checked)
 
         await self.channel_layer.group_send(
             self.room_group_name,

@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.views.generic import ListView, CreateView, DeleteView, FormView, View, TemplateView
 from django.urls import reverse_lazy
 from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Formularios
 from encuestas.forms import EncuestaForm, CampoEncuestaForm, EncuestaFinalForm
@@ -19,9 +20,9 @@ import ast
 import numpy as np
 import json
 
-class EncuestaCreateView(CreateView):
+class EncuestaCreateView(LoginRequiredMixin, CreateView):
     """ Vista para crear una encuesta. """
-
+    login_url = 'login'
     model = Encuesta
     form_class = EncuestaForm
     template_name = 'encuestas/crear_encuesta.html'
@@ -42,9 +43,9 @@ class EncuestaCreateView(CreateView):
     def get_success_url(self):
         return reverse('campo_encuesta', kwargs={"pk_encuesta": self.object.pk})
 
-class CampoEncuestaCreateView(CreateView):
+class CampoEncuestaCreateView(LoginRequiredMixin, CreateView):
     """ Vista para crear un campo de la encuesta. """
-
+    login_url = 'login'
     model = CampoEncuesta
     template_name = "encuestas/encuesta_campo.html"
     form_class = CampoEncuestaForm
@@ -84,9 +85,9 @@ class CampoEncuestaCreateView(CreateView):
     def get_success_url(self):
         return reverse('campo_encuesta', kwargs={"pk_encuesta": self.kwargs['pk_encuesta']})
 
-class CampoEncuestaDeleteView(DeleteView):
+class CampoEncuestaDeleteView(LoginRequiredMixin, DeleteView):
     """ Vista para eliminar un campo de la encuesta. """
-
+    login_url = 'login'
     model=CampoEncuesta
     template_name = "encuestas/campoencuesta_confirm_delete.html"
 
@@ -110,9 +111,9 @@ class CampoEncuestaDeleteView(DeleteView):
     def get_success_url(self):
         return reverse('campo_encuesta', kwargs={"pk_encuesta": self.kwargs['pk_encuesta']})
 
-class VistaPreviaFormView(FormView):
+class VistaPreviaFormView(LoginRequiredMixin, FormView):
     """ Vita para visualizar la encuesta una vez finalizada. """
-
+    login_url = 'login'
     form_class = EncuestaFinalForm
     template_name = "encuestas/vista_previa.html"
     
@@ -145,9 +146,9 @@ class VistaPreviaFormView(FormView):
         context['pk_encuesta'] = self.kwargs['pk_encuesta']
         return context
 
-class ListaEncuestasListView(ListView):
+class ListaEncuestasListView(LoginRequiredMixin, ListView):
     """ Vista para listar las encuestas. """
-    
+    login_url = 'login'
     model = Encuesta
     template_name = "encuestas/lista_encuestas.html"
 
@@ -161,9 +162,9 @@ class ListaEncuestasListView(ListView):
     def get_queryset(self):
         return self.request.user.encuestas.all()
 
-class EncuestaDeleteView(DeleteView):
+class EncuestaDeleteView(LoginRequiredMixin, DeleteView):
     """ Vista para eliminar una encuesta """
-
+    login_url = 'login'
     model = Encuesta
     template_name = "encuestas/eliminar_encuesta.html"
 
@@ -180,9 +181,9 @@ class EncuestaDeleteView(DeleteView):
     def get_success_url(self):
         return reverse('lista_encuestas')
 
-class TerminarEncuestaView(View):
+class TerminarEncuestaView(LoginRequiredMixin, View):
     """ Vista para enviar al front si la encuesta que si quiere erminar tiene o no respuestas. """
-
+    login_url = 'login'
     def get(self, request, *args, **kwargs):
         encuesta = Encuesta.objects.get(pk=request.GET['pk_encuesta'])
         
@@ -198,9 +199,9 @@ class TerminarEncuestaView(View):
 
         return JsonResponse(respuesta)
 
-class EncuestaUpdateView(View):
+class EncuestaUpdateView(LoginRequiredMixin, View):
     """ Vista para actualizar el estado de la encuesta a Terminada """
-
+    login_url = 'login'
     def dispatch(self, request, *args, **kwargs):
 
         if request.user.is_manager:
@@ -216,9 +217,9 @@ class EncuestaUpdateView(View):
 
         return JsonResponse({'respuesta':'success'})
 
-class ActivarEncuestaView(View):
+class ActivarEncuestaView(LoginRequiredMixin, View):
     """ Vista para actualizar el estado de la encuesta a Terminada """
-
+    login_url = 'login'
     def dispatch(self, request, *args, **kwargs):
 
         if request.user.is_manager:
@@ -240,9 +241,17 @@ class ActivarEncuestaView(View):
 
         return JsonResponse(respuesta)
 
-class EncuestaAgenteTemplateView(TemplateView):
-    """ Vista para que el agente gestione el proceso de realizarión de una encuesta. """
+class EncuestaAgenteTemplateView(LoginRequiredMixin, TemplateView):
+    """ Vista para que el agente gestione el proceso de realización de una encuesta. """
+    login_url = 'login'
     template_name = "encuestas/encuesta_agente.html"
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if Encuesta.objects.get(pk=self.kwargs['pk_encuesta']).estado_terminado == True:
+            return redirect('lista_encuestas')
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(EncuestaAgenteTemplateView, self).get_context_data(**kwargs)
@@ -253,9 +262,9 @@ class EncuestaAgenteTemplateView(TemplateView):
         return context
         
 
-class EncuestaVistaFormView(FormView):
+class EncuestaVistaFormView(LoginRequiredMixin, FormView):
     """ Vista para visualizar la encuesta en una vista previa. """
-
+    login_url = 'login'
     form_class = EncuestaFinalForm
     template_name = 'encuestas/vista_encuesta.html'
 
@@ -277,9 +286,9 @@ class EncuestaVistaFormView(FormView):
         context['pk_encuesta'] = self.kwargs['pk_encuesta']
         return context
 
-class ListaEncuestasRealizarListView(ListView):
+class ListaEncuestasRealizarListView(LoginRequiredMixin, ListView):
     """ Vista para listar las encuestas. """
-    
+    login_url = 'login'
     model = Encuesta
     template_name = "encuestas/lista_encuestas_realizar.html"
 
@@ -293,9 +302,9 @@ class ListaEncuestasRealizarListView(ListView):
 
         return context
 
-class RealizarEncuestaFormView(FormView):
+class RealizarEncuestaFormView(LoginRequiredMixin, FormView):
     """ Vista para realizar la encuesta. """
-    
+    login_url = 'login'
     form_class = EncuestaFinalForm
     template_name = 'encuestas/realizar_encuesta.html'
     success_url = reverse_lazy('lista_encuestas_realizar')
@@ -327,8 +336,9 @@ class RealizarEncuestaFormView(FormView):
         context['encuesta'] = encuesta
         return context
 
-class GuardarRespuestaView(View):
-
+class GuardarRespuestaView(LoginRequiredMixin, View):
+    """ Vista para guardar las respuestas del usuario. """
+    login_url = 'login'
     def post(self, request, *args, **kwargs):
         post_data = json.loads(request.body.decode("utf-8"))
 
@@ -358,7 +368,9 @@ class GuardarRespuestaView(View):
 
         return JsonResponse({'respuesta':respuesta})
 
-class GraficaTemplateView(TemplateView):
+class GraficaTemplateView(LoginRequiredMixin, TemplateView):
+    """ Vista para graficar los resultados de las encuestas gráficamente sii son preguntas tipo lista. """
+    login_url = 'login'
     template_name = "encuestas/resultados_encuesta.html"
 
     def get_context_data(self, **kwargs):
@@ -367,8 +379,11 @@ class GraficaTemplateView(TemplateView):
         preguntas = encuesta.campos.all()
 
         resultados = []
+        numero_votantes = []
+        for pregunta in preguntas:
+            numero_votantes.append(pregunta.respuestas.all().count())
 
-        
+        numero_votantes = max(numero_votantes)
         for pregunta in preguntas:
             if pregunta.tipo == CampoEncuesta.TIPO_TEXTO or pregunta.tipo == CampoEncuesta.TIPO_TEXTO_AREA:
                 continue
@@ -392,8 +407,17 @@ class GraficaTemplateView(TemplateView):
                     colores.append('rgb({}, {}, {})'.format(color[0], color[1], color[2]))
 
                 for i in range(len(contador_respuestas)):
-                    porcentaje = round((contador_respuestas[i]/len(respuestas))*100, 2)
+                    porcentaje = round((contador_respuestas[i]/numero_votantes)*100, 2)
                     items[i] = items[i] + " " +str(porcentaje) + "%"
+
+                items.append('Ausencia/No responde')
+
+                votantes_ausentes = numero_votantes-sum(contador_respuestas)
+                contador_respuestas.append(votantes_ausentes)
+                color = np.random.choice(range(256), size=3)
+                colores.append('rgb({}, {}, {})'.format(color[0], color[1], color[2]))
+                porcentaje = round((votantes_ausentes/numero_votantes)*100, 2)
+                items[items.index('Ausencia/No responde')] = items[items.index('Ausencia/No responde')] + " " + str(porcentaje) + "%"
 
                 resultados.append({
                     'pregunta' : pregunta.nombre_campo,

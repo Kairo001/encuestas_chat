@@ -98,6 +98,8 @@
         {% endblock %}
     </main>
 
+    {{ user.is_authenticated|json_script:"json_user_is_authenticated" }}
+
     {% block extra_js %}{% endblock %}
 
     <!-- scripts -->
@@ -112,7 +114,7 @@
 
     <script>
 
-
+        const user_authenticated = JSON.parse(document.getElementById('json_user_is_authenticated').textContent)
 
         const encuestaSocket = new WebSocket(
             'ws://'
@@ -124,7 +126,7 @@
             console.log('onmessage')
 
             const data = JSON.parse(e.data)
-            if (!('{{user.is_manager}}' === "True")) {
+            if (!'{{user.is_manager}}' === "True" && user_authenticated == true) {
                 Swal.fire({
                     title: '<strong>Encuesta nueva</strong>',
                     icon: 'info',
@@ -157,12 +159,12 @@
             let data_response = await resultado.json()
 
             if (data_response['actualizado'] == true) {
-                Swal.fire({
+                await Swal.fire({
                     title: '<strong>Encuesta activada</strong>',
                     icon: 'info',
                     html: 'Se ha generado un aviso a cada usuario para realizar la encuesta.',
-                    showCloseButton: true,
-                    focusConfirm: false,
+                    showConfirmButton: false,
+                    timer: 1200
                 })
                 encuestaSocket.send(JSON.stringify({
                     'message': `${id_encuesta}`
